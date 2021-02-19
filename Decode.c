@@ -8,7 +8,7 @@ void DecodeLSL_LSR_LD_LM_IMM5(int number, FILE *fileX){
     int op = (number & (mask1 << 0xB)) >> 0xB;                                   // Bit [9]
 
     if(op == 0)
-        fprintf(fileX,"%x\t LSL r%d, r%d, #%d \n",number,first3Bits(number),second3Bits(number),immed5(number));o
+        fprintf(fileX,"%x\t LSL r%d, r%d, #%d \n",number,first3Bits(number),second3Bits(number),immed5(number));
     else
         fprintf(fileX,"%x\t LSR r%d, r%d, #%d \n",number,first3Bits(number),second3Bits(number),immed5(number));
 }
