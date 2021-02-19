@@ -180,6 +180,36 @@ void DecodeCMP_HN_HM(int number, FILE *fileX){
 
 }
 
+//BX_BLX Rm
+void DecodeBX_BLX_RM(int number, FILE *fileX){
+    int maskR = 0xf;
+
+    int op = ((number & (mask1 << 7)) >> 7);
+    int Rm = ((number & (maskR << 3)) >> 3);
+
+    if(op == 0 ){
+        if(Rm == 13){
+            fprintf(fileX,"%x BX sp\n", number);
+        }else if(Rm == 14){
+            fprintf(fileX,"%x BX lr\n", number);
+        }else if(Rm == 15){
+            fprintf(fileX,"%x BX pc\n", number);
+        }else{
+            fprintf(fileX,"%x BX r%d\n", number, Rm);
+        }
+    }else{
+        if(Rm == 13){
+            fprintf(fileX,"%x BLX sp\n", number);
+        }else if(Rm == 14){
+            fprintf(fileX,"%x BLX lr\n", number);
+        }else if(Rm == 15){
+            fprintf(fileX,"%x BLX pc\n", number);
+        }else{
+            fprintf(fileX,"%x BLX r%d\n", number, Rm);
+        }
+    }
+}
+
 //LDR Ld, [pc, #imm8*4]
 void DecodeLDR_LD_PC_IMM8X4(int number, FILE *fileX){
     int Ld = ((number & (mask7 << 8)) >> 8);
@@ -287,35 +317,114 @@ void DecodeSTR_LDR_SP_IMM8(int number, FILE *fileX){
     }
 }
 
-//BX_BLX Rm
-void DecodeBX_BLX_RM(int number, FILE *fileX){
-    int maskR = 0xf;
+// <PUSH | POP> {register_list, R}
+void DecodePUSH_POP(int number, FILE *fileX){
+    if((number & 0xFF) > 0){
+        int op = (number & (mask1 << 0xB)) >> 0xB;
+        int R  = (number & (mask1 << 0x8)) >> 0x8;
 
-    int op = ((number & (mask1 << 7)) >> 7);
-    int Rm = ((number & (maskR << 3)) >> 3);
+        if(op == 0){
+            fprintf(fileX,"%x\t PUSH {",number); 
+        }
+        else{
+            fprintf(fileX,"%x\t POP {",number);
+        }
 
-    if(op == 0 ){
-        if(Rm == 13){
-            fprintf(fileX,"%x BX sp\n", number);
-        }else if(Rm == 14){
-            fprintf(fileX,"%x BX lr\n", number);
-        }else if(Rm == 15){
-            fprintf(fileX,"%x BX pc\n", number);
-        }else{
-            fprintf(fileX,"%x BX r%d\n", number, Rm);
+        int c = 0, botaVirg = 0;
+        int register_list[8];
+        int value = number & 0xFF;
+
+        for(int i = 0; i < 9; i++)
+        {
+            if((value & 0x1) == 1){ 
+                register_list[c] = i;
+                c++;
+                
+            }
+            else if(c > 0){
+                if(botaVirg > 0){
+                    fprintf(fileX, ",");
+                }
+
+                if(c == 1){
+                    fprintf(fileX, "r%d", register_list[0]);
+                }
+                else if(c == 2){
+                    fprintf(fileX, "r%d, r%d", register_list[0],register_list[1]);
+                }
+                else
+                    fprintf(fileX, "r%d-r%d", register_list[0],register_list[c-1]);
+                
+                c = 0;
+                botaVirg = 1;
+            }
+            value = value >> 0x1;
         }
-    }else{
-        if(Rm == 13){
-            fprintf(fileX,"%x BLX sp\n", number);
-        }else if(Rm == 14){
-            fprintf(fileX,"%x BLX lr\n", number);
-        }else if(Rm == 15){
-            fprintf(fileX,"%x BLX pc\n", number);
-        }else{
-            fprintf(fileX,"%x BLX r%d\n", number, Rm);
+        
+
+        if(R == 1){
+            if(op == 0) fprintf(fileX, ",LR}\n");
+            else fprintf(fileX, ",PC}\n");
         }
+        else
+            fprintf(fileX, "}\n");
     }
+    else
+        fprintf(fileX, "%d\t UNPREDICTABLE", number);        
 }
+
+// <STMIA | LDMIA> Ln!, {register_list}
+void DecodeSTMIA_LDMIA(int number, FILE *fileX){
+    if((number & 0xFF) > 0){
+        int op = (number & (mask1 << 0xB)) >> 0xB;
+        int Ln  = (number & (mask7 << 0x8)) >> 0x8;
+
+
+        if(op == 0){
+            fprintf(fileX,"%x\t STMIA r%d!, {",number,Ln); 
+        }
+        else{
+            fprintf(fileX,"%x\t LDMIA r%d!, {",number,Ln);
+        }
+
+        int c = 0, botaVirg = 0;
+        int register_list[8];
+        int value = number & 0xFF;
+
+        for(int i = 0; i < 9; i++)
+        {
+            if((value & 0x1) == 1){ 
+                register_list[c] = i;
+                c++;  
+            }
+            else if(c > 0){
+                if(botaVirg > 0){
+                    fprintf(fileX,",");
+                }
+
+                if(c == 1){
+                    fprintf(fileX,"r%d", register_list[0]);
+                }
+                else if(c == 2){
+                    fprintf(fileX,"r%d, r%d", register_list[0],register_list[1]);
+                }
+                else
+                    fprintf(fileX,"r%d-r%d", register_list[0],register_list[c-1]);
+                
+                c = 0;
+                botaVirg = 1;
+            }
+            value = value >> 0x1;
+        }
+        
+        fprintf(fileX, "}\n");
+    }
+    else
+        fprintf(fileX, "%d\t UNPREDICTABLE", number);      
+}
+
+
+
 
 void invalid(int number, FILE *fileX){
     fprintf(fileX,"%x\t Invalido/N�o feito",number);
