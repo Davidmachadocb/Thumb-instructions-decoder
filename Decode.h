@@ -1,11 +1,16 @@
+#include<stdio.h>
+
 #ifndef DECODE_H_INCLUDED
 #define DECODE_H_INCLUDED
 
+#define maskF 0xF
 #define mask7 0x7
+#define mask3 0x3
 #define mask1 0x1
 
 #define immed8(number) ((number) & 0xFF)
 #define immed5(number) (((number) & 0x7C0) >> 0x6)
+#define immed7(number) ((number) & 0x007F)
 #define immed11(number) ((number) & 0x7ff)
 
 #define first3Bits(number) ((number) & 0x7)
@@ -64,7 +69,7 @@ void DecodeBX_BLX_RM(int number, FILE *fileX);
 
 void DecodeBKPT_IMM8(int number, FILE *fileX);
 
-void DecodeBcond_OFFSET(int number, File *fileX);
+void DecodeBcond_OFFSET(int number, FILE *fileX);
 
 void DecodeB_OFFSET(int number, FILE *fileX);
 
@@ -73,5 +78,19 @@ void DecodeSWI_IMM8(int number, FILE *fileX);
 void DecodeBLX_OFFSET(int number, FILE *fileX);
 
 void DecodeBL_OFFSET(int number, FILE *fileX);
+
+void DecodeUndefined(int number, FILE *fileX);
+
+void DecodeCPSIE_CPSID(int number, FILE *fileX);
+
+void DecodeREV_REV16_REVSH(int number, FILE *fileX);
+
+void DecodeSXTH_SXTB_UXTH_UXTB(int number, FILE *fileX);
+
+void DecodeSETENDLE_SETENDBE(int number, FILE *fileX);
+
+void DecodeADDsp_SUBsp(int number, FILE *fileX);
+
+void DecodeADDLdpc_ADDLdsp(int number, FILE *fileX);
 
 #endif // DECODE_H_INCLUDED
