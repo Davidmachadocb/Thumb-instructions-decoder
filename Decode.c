@@ -67,7 +67,7 @@ void DecodeAND_EOR_LSL_LSR_LD_LM(int number, FILE *fileX){
 
     if(op == 0)
         fprintf(fileX,"%x\t AND r%d, r%d \n",number,first3Bits(number),second3Bits(number));
-    else if(op == d)
+    else if(op == 1)
         fprintf(fileX,"%x\t EOR r%d, r%d \n",number,first3Bits(number),second3Bits(number));
     else if(op == 2)
         fprintf(fileX,"%x\t LSL r%d, r%d \n",number,first3Bits(number),second3Bits(number));
@@ -219,10 +219,10 @@ void DecodeBKPT_IMM8(int number, FILE *fileX){
 }
 
 //B<cond> #offset*2+4
-void DecodeBcond_OFFSET(int number, File *fileX){
+void DecodeBcond_OFFSET(int number, FILE *fileX){
     int maskC = 0xf;
 
-    int cond = ((n & (maskC << 8)) >> 8);
+    int cond = ((number & (maskC << 8)) >> 8);
     int imm = immed8(number);
 
     switch(cond){
@@ -373,7 +373,7 @@ void DecodeSTR_LDR_LD_LN_IMM5(int number, FILE *fileX){
     int op = ((number & (mask1 << 11)) >> 11);
     int imm = immed5(number);
     int Ln = ((number & (mask7 << 3)) >> 3);
-    int Ld = (number & mask7)
+    int Ld = (number & mask7);
 
     if(op == 0){
         fprintf(fileX,"%x\t STR r%d, [r%d, #%d]\n", number, Ld, Ln, imm*4);
@@ -533,10 +533,107 @@ void DecodeSTMIA_LDMIA(int number, FILE *fileX){
         fprintf(fileX, "%d\t UNPREDICTABLE", number);      
 }
 
+// ADD Ld, pc, #immed*4 | ADD Ld, sp, #immed*4
+void DecodeADDLdpc_ADDLdsp(int number, FILE *fileX){
+    int op = (number & (mask1 << 0xb)) >> 0xb;                                  
+    int Ld = (number & (mask7 << 0x8)) >> 0x8;
 
-
-
-void invalid(int number, FILE *fileX){
-    fprintf(fileX,"%x\t Invalido/N�o feito",number);
+    if(op == 0){
+        fprintf(fileX,"%x\t ADD r%d, pc, #%d \n",number,Ld,immed8(number)*4);
+    }
+    else{
+        fprintf(fileX,"%x\t ADD r%d, sp, #%d \n",number,Ld,immed8(number)*4);
+    }
 }
+
+// ADD sp, #immed*4 | SUB sp, #immed*4
+void DecodeADDsp_SUBsp(int number, FILE *fileX){
+    int op = (number & (mask1 << 0x7)) >> 0x7;                                  
+
+    if(op == 0){
+        fprintf(fileX,"%x\t ADD  sp, #%d \n", number,(immed7(number))*4);
+    }
+    else{
+        fprintf(fileX,"%x\t SUB sp, #%d \n", number ,(immed7(number))*4);
+    }
+}
+
+// SETEND LE | SETEND BE
+void DecodeSETENDLE_SETENDBE(int number, FILE *fileX){
+    int op = (number & (mask1 << 0x3)) >> 0x3;                                 
+
+    if(op == 0){
+        fprintf(fileX,"%x\t SETEND LE \n", number);
+    }
+    else{
+        fprintf(fileX,"%x\t SETEND BE \n", number);
+    }
+}
+
+//SXTH | SXTB | UXTH | UXTB
+void DecodeSXTH_SXTB_UXTH_UXTB(int number, FILE *fileX){
+    int op = (number & (mask3 << 0x6)) >> 0x6;
+    int Ld = number & maskF;
+    int Lm = (number & (mask7 << 0x3)) >> 0x3;
+
+    if(op == 0 ){
+        fprintf(fileX,"%x\t SXTH r%d, r%d \n",number, Lm, Ld);
+    }
+    else if(op == 1){
+        fprintf(fileX,"%x\t SXTB r%d, r%d \n",number, Lm, Ld);
+    }
+    else if(op == 2){
+        fprintf(fileX,"%x\t UXTH r%d, r%d \n",number, Lm, Ld);
+    }
+    else{
+        fprintf(fileX,"%x\t UXTB r%d, r%d \n",number, Lm, Ld);
+    }
+}
+
+//REV | REV16 | | REVSH
+void DecodeREV_REV16_REVSH(int number, FILE *fileX){
+    int op = (number & (mask3 << 0x6)) >> 0x6;
+    int Ld = number & maskF;
+    int Lm = (number & (mask7 << 0x3)) >> 0x3;
+
+    if(op == 0 ){
+        fprintf(fileX,"%x\t REV r%d, r%d \n",number, Lm, Ld);
+    }
+    else if(op == 1){
+        fprintf(fileX,"%x\t REV16 r%d, r%d \n",number, Lm, Ld);
+    }
+    else if(op == 2){
+        fprintf(fileX,"%x\t", number);
+    }
+    else{
+        fprintf(fileX,"%x\t REVSH r%d, r%d \n",number, Lm, Ld);
+    }
+}
+
+//CPSIE | CPSID
+void DecodeCPSIE_CPSID(int number, FILE *fileX){
+    int op = (number & (mask1 << 0x4)) >> 0x4;
+
+
+    if(op == 0){
+        fprintf(fileX,"%x\t CPSIE ", number);
+        if((number & (mask1 << 2)) >> 2 == 1) fprintf(fileX,"a");
+        if((number & (mask1 << 1)) >> 1 == 1) fprintf(fileX,"i");
+        if((number & mask1) == 1)     fprintf(fileX,"f");
+        fprintf(fileX," \n");
+    }
+    else{
+        fprintf(fileX,"%x\t CPSID ", number);
+        if((number & (mask1 << 2)) >> 2 == 1) fprintf(fileX,"a");
+        if((number & (mask1 << 1)) >> 1 == 1) fprintf(fileX,"i");
+        if((number & mask1) == 1)     fprintf(fileX,"f");;
+        fprintf(fileX," \n");
+    }
+}
+
+//Undefined and expected to remain so
+void DecodeUndefined(int number, FILE *fileX){
+    fprintf(fileX, "%x\t  Undefined and expected to remain so\n", number);
+}
+
 
