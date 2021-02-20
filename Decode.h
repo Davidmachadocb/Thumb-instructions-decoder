@@ -5,12 +5,12 @@
 #define mask1 0x1
 
 #define immed8(number) ((number) & 0xFF)
-#define immed5(number) ((number) & 0x7C0)
+#define immed5(number) (((number) & 0x7C0) >> 0x6)
 #define immed11(number) ((number) & 0x7ff)
 
 #define first3Bits(number) ((number) & 0x7)
-#define second3Bits(number) ((number) & 0x38)
-#define third3Bits(number) ((number) & 0x1C0)
+#define second3Bits(number) (((number) & 0x38) >> 0x3)
+#define third3Bits(number) (((number) & 0x1C0) >> 0x6)
 
 void DecodeLSL_LSR_LD_LM_IMM5(int number, FILE *fileX);
 
