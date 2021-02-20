@@ -6,6 +6,7 @@
 
 #define immed8(number) ((number) & 0xFF)
 #define immed5(number) ((number) & 0x7C0)
+#define immed11(number) ((number) & 0x7ff)
 
 #define first3Bits(number) ((number) & 0x7)
 #define second3Bits(number) ((number) & 0x38)
@@ -60,5 +61,17 @@ void decodeSTRH_LDRH_LD_LN_IMM5(int number, FILE *fileX);
 void DecodeSTR_LDR_SP_IMM8(int number, FILE *fileX);
 
 void DecodeBX_BLX_RM(int number, FILE *fileX);
+
+void DecodeBKPT_IMM8(int number, FILE *fileX);
+
+void DecodeBcond_OFFSET(int number, File *fileX);
+
+void DecodeB_OFFSET(int number, FILE *fileX);
+
+void DecodeSWI_IMM8(int number, FILE *fileX);
+
+void DecodeBLX_OFFSET(int number, FILE *fileX);
+
+void DecodeBL_OFFSET(int number, FILE *fileX);
 
 #endif // DECODE_H_INCLUDED
