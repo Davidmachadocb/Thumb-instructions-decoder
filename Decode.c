@@ -210,6 +210,116 @@ void DecodeBX_BLX_RM(int number, FILE *fileX){
     }
 }
 
+//BKPT #imm8
+void DecodeBKPT_IMM8(int number, FILE *fileX){
+
+    int imm = immed8(number);
+
+    fprintf(fileX,"%x\t BKPT #%d\n", number, imm);
+}
+
+//B<cond> #offset*2+4
+void DecodeBcond_OFFSET(int number, File *fileX){
+    int maskC = 0xf;
+
+    int cond = ((n & (maskC << 8)) >> 8);
+    int imm = immed8(number);
+
+    switch(cond){
+        case 0:
+            fprintf(fileX,"%x\t BEQ #%d\n", number, (imm*2)+4);
+        break;
+
+        case 1:
+            fprintf(fileX,"%x\t BNE #%d\n", number, (imm*2)+4);
+        break;
+
+        case 2:
+            fprintf(fileX,"%x\t BCS #%d\n", number, (imm*2)+4);
+        break;
+
+        case 3:
+            fprintf(fileX,"%x\t BCC #%d\n", number, (imm*2)+4);
+        break;
+
+        case 4:
+            fprintf(fileX,"%x\t BMI #%d\n", number, (imm*2)+4);
+        break;
+
+        case 5:
+            fprintf(fileX,"%x\t BPL #%d\n", number, (imm*2)+4);
+        break;
+
+        case 6:
+            fprintf(fileX,"%x\t BVS #%d\n", number, (imm*2)+4);
+        break;
+
+        case 7:
+            fprintf(fileX,"%x\t BVC #%d\n", number, (imm*2)+4);
+        break;
+
+        case 8:
+            fprintf(fileX,"%x\t BHI #%d\n", number, (imm*2)+4);
+        break;
+
+        case 9:
+            fprintf(fileX,"%x\t BLS #%d\n", number, (imm*2)+4);
+        break;
+
+        case 10:
+            fprintf(fileX,"%x\t BGE #%d\n", number, (imm*2)+4);
+        break;
+
+        case 11:
+            fprintf(fileX,"%x\t BLT #%d\n", number, (imm*2)+4);
+        break;
+
+        case 12:
+            fprintf(fileX,"%x\t BGT #%d\n", number, (imm*2)+4);
+        break;
+        
+        case 13:
+            fprintf(fileX,"%x\t BLE #%d\n", number, (imm*2)+4);
+        break;
+
+        default:
+            fprintf(fileX,"Valor inválido!\n");
+    }
+}
+
+//B #offset*2+4
+void DecodeB_OFFSET(int number, FILE *fileX){
+
+    int imm = immed11(number);
+
+    fprintf(fileX,"%x\t B #%d\n", number, (imm*2)+4);
+}
+
+//SWI #imm8
+void DecodeSWI_IMM8(int number, FILE *fileX){
+
+    int imm = immed8(number);
+
+    fprintf(fileX,"%x\t SWI #%d\n", number, imm);
+}
+
+//BLX #offset*2+4
+void DecodeBLX_OFFSET(int number, FILE *fileX){
+    int maskIMM = 0x3ff;
+
+    int imm = ((number & (maskIMM << 1)) >> 1);
+
+    fprintf(fileX,"%x\t BLX #%d\n", number, (imm*2)+4);
+}
+
+//BL #offset*2+4
+void DecodeBL_OFFSET(int number, FILE *fileX){
+
+    int imm = immed11(number);
+
+    fprintf(fileX,"%x\t BL #%d\n", number, (imm*2)+4);
+}
+
 //LDR Ld, [pc, #imm8*4]
 void DecodeLDR_LD_PC_IMM8X4(int number, FILE *fileX){
     int Ld = ((number & (mask7 << 8)) >> 8);
