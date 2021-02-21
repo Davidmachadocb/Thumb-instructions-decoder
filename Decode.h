@@ -17,6 +17,8 @@
 #define second3Bits(number) (((number) & 0x38) >> 0x3)
 #define third3Bits(number) (((number) & 0x1C0) >> 0x6)
 
+void highregister(int Hm, FILE *fileX);
+
 void DecodeLSL_LSR_LD_LM_IMM5(int number, FILE *fileX);
 
 void DecodeASR_LD_LM_IMM5(int number, FILE *fileX);
@@ -51,6 +53,8 @@ void DecodeCMP_HN_LM(int number, FILE *fileX);
 
 void DecodeCMP_HN_HM(int number, FILE *fileX);
 
+void DecodeBX_BLX_RM(int number, FILE *fileX);
+
 void DecodeLDR_LD_PC_IMM8X4(int number, FILE *fileX);
 
 void DecodeSTR_STRH_STRB_LDRSB_LD_LN_LM(int number, FILE *fileX);
@@ -65,32 +69,36 @@ void DecodeSTRH_LDRH_LD_LN_IMM5(int number, FILE *fileX);
 
 void DecodeSTR_LDR_SP_IMM8(int number, FILE *fileX);
 
-void DecodeBX_BLX_RM(int number, FILE *fileX);
+void DecodeADDLdpc_ADDLdsp(int number, FILE *fileX);
+
+void DecodeADDsp_SUBsp(int number, FILE *fileX);
+
+void DecodeSXTH_SXTB_UXTH_UXTB(int number, FILE *fileX);
+
+void DecodeREV_REV16_REVSH(int number, FILE *fileX);
+
+void DecodePUSH_POP(int number, FILE *fileX);
+
+void DecodeSETENDLE_SETENDBE(int number, FILE *fileX);
+
+void DecodeCPSIE_CPSID(int number, FILE *fileX);
 
 void DecodeBKPT_IMM8(int number, FILE *fileX);
 
+void DecodeSTMIA_LDMIA(int number, FILE *fileX);
+
 void DecodeBcond_OFFSET(int number, FILE *fileX);
 
-void DecodeB_OFFSET(int number, FILE *fileX);
+void DecodeUndefined(int number, FILE *fileX);
 
 void DecodeSWI_IMM8(int number, FILE *fileX);
+
+void DecodeB_OFFSET(int number, FILE *fileX);
 
 void DecodeBLX_OFFSET(int number, FILE *fileX);
 
 void DecodeBL_OFFSET(int number, FILE *fileX);
 
-void DecodeUndefined(int number, FILE *fileX);
-
-void DecodeCPSIE_CPSID(int number, FILE *fileX);
-
-void DecodeREV_REV16_REVSH(int number, FILE *fileX);
-
-void DecodeSXTH_SXTB_UXTH_UXTB(int number, FILE *fileX);
-
-void DecodeSETENDLE_SETENDBE(int number, FILE *fileX);
-
-void DecodeADDsp_SUBsp(int number, FILE *fileX);
-
-void DecodeADDLdpc_ADDLdsp(int number, FILE *fileX);
-
+// obs
+void underfinedGrup04(int number,FILE *fileX);
 #endif // DECODE_H_INCLUDED
