@@ -667,7 +667,8 @@ void DecodeUndefined(int number, FILE *fileX){
 //-------------------------------------------------------------------------------
 // Instrução não definida
 void underfinedGrup04(int number,FILE *fileX){
-  fprintf(fileX, "%x\t Sem instrução correpondente");
+  fprintf(fileX, "%x\t Sem instrução correpondente\n",number);
 }
+
 
 
