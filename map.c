@@ -63,6 +63,7 @@ void (* pDecodeSubGrupo4_2[])(int number,FILE *fileX) =
   DecodeADD_MOV_LD_HM,
   DecodeADD_MOV_HD_LM,
   DecodeADD_MOV_HD_HM,
+  underfinedGrup04,                                                             // bits : 0100 0101 00 [bits 5-0 sendo qualquer coisa]
   DecodeCMP_LN_HM,
   DecodeCMP_HN_LM,
   DecodeCMP_HN_HM
