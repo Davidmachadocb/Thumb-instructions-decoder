@@ -61,7 +61,7 @@ void DecodeSTR_LDR_LD_LN_IMM5(int number, FILE *fileX);
 
 void DecodeSTRB_LDRB_LD_LN_IMM5(int number, FILE *fileX);
 
-void decodeSTRH_LDRH_LD_LN_IMM5(int number, FILE *fileX);
+void DecodeSTRH_LDRH_LD_LN_IMM5(int number, FILE *fileX);
 
 void DecodeSTR_LDR_SP_IMM8(int number, FILE *fileX);
 
