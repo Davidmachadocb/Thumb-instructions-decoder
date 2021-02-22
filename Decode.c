@@ -217,23 +217,23 @@ void DecodeBX_BLX_RM(int number, FILE *fileX){
 
     if(op == 0 ){
         if(Rm == 13){                                      //se Rm for maior igual a 13, Rm será chamado de sp, lr ou pc respectivamente
-            fprintf(fileX,"%x BX sp\n", number);
+            fprintf(fileX,"%x\t BX sp\n", number);
         }else if(Rm == 14){
-            fprintf(fileX,"%x BX lr\n", number);
+            fprintf(fileX,"%x\t BX lr\n", number);
         }else if(Rm == 15){
-            fprintf(fileX,"%x BX pc\n", number);
+            fprintf(fileX,"%x\t BX pc\n", number);
         }else{
-            fprintf(fileX,"%x BX r%d\n", number, Rm);
+            fprintf(fileX,"%x\t BX r%d\n", number, Rm);
         }
     }else{
         if(Rm == 13){
-            fprintf(fileX,"%x BLX sp\n", number);
+            fprintf(fileX,"%x\t BLX sp\n", number);
         }else if(Rm == 14){
-            fprintf(fileX,"%x BLX lr\n", number);
+            fprintf(fileX,"%x\t BLX lr\n", number);
         }else if(Rm == 15){
-            fprintf(fileX,"%x BLX pc\n", number);
+            fprintf(fileX,"%x\t BLX pc\n", number);
         }else{
-            fprintf(fileX,"%x BLX r%d\n", number, Rm);
+            fprintf(fileX,"%x\t BLX r%d\n", number, Rm);
         }
     }
 }
