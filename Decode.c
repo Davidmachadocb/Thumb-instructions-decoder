@@ -212,11 +212,11 @@ void DecodeCMP_HN_HM(int number, FILE *fileX){
 void DecodeBX_BLX_RM(int number, FILE *fileX){
     int maskR = 0xf;
 
-    int op = ((number & (mask1 << 7)) >> 7);
-    int Rm = ((number & (maskR << 3)) >> 3);
+    int op = ((number & (mask1 << 7)) >> 7);               //pegar o bit 7 de number, define se será BX OU BLX
+    int Rm = ((number & (maskR << 3)) >> 3);               //pegar os bits 3-6 de number, define o Rm
 
     if(op == 0 ){
-        if(Rm == 13){
+        if(Rm == 13){                                      //se Rm for maior igual a 13, Rm será chamado de sp, lr ou pc respectivamente
             fprintf(fileX,"%x BX sp\n", number);
         }else if(Rm == 14){
             fprintf(fileX,"%x BX lr\n", number);
@@ -241,7 +241,7 @@ void DecodeBX_BLX_RM(int number, FILE *fileX){
 //BKPT #imm8
 void DecodeBKPT_IMM8(int number, FILE *fileX){
 
-    int imm = immed8(number);
+    int imm = immed8(number);                              //pega os bits 0-7 de number, define um imediato de 8 bits.
 
     fprintf(fileX,"%x\t BKPT #%d\n", number, imm);
 }
@@ -250,64 +250,64 @@ void DecodeBKPT_IMM8(int number, FILE *fileX){
 void DecodeBcond_OFFSET(int number, FILE *fileX){
     int maskC = 0xf;
 
-    int cond = ((number & (maskC << 8)) >> 8);
-    int imm = immed8(number);
+    int cond = ((number & (maskC << 8)) >> 8);                         //pega os bits 8-11 de number, define o tipo de condição e precisa ser 
+    int off = immed8(number);                                          //pega os bits 0-7 de number, define um offset de 8 bits
 
     switch(cond){
-        case 0:
-            fprintf(fileX,"%x\t BEQ #%d\n", number, (imm*2)+4);
+        case 0:                                                        //as condicionais vão de 0 a 13
+            fprintf(fileX,"%x\t BEQ #%d\n", number, (off*2)+4);
         break;
 
         case 1:
-            fprintf(fileX,"%x\t BNE #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BNE #%d\n", number, (off*2)+4);
         break;
 
         case 2:
-            fprintf(fileX,"%x\t BCS #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BCS #%d\n", number, (off*2)+4);
         break;
 
         case 3:
-            fprintf(fileX,"%x\t BCC #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BCC #%d\n", number, (off*2)+4);
         break;
 
         case 4:
-            fprintf(fileX,"%x\t BMI #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BMI #%d\n", number, (off*2)+4);
         break;
 
         case 5:
-            fprintf(fileX,"%x\t BPL #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BPL #%d\n", number, (off*2)+4);
         break;
 
         case 6:
-            fprintf(fileX,"%x\t BVS #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BVS #%d\n", number, (off*2)+4);
         break;
 
         case 7:
-            fprintf(fileX,"%x\t BVC #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BVC #%d\n", number, (off*2)+4);
         break;
 
         case 8:
-            fprintf(fileX,"%x\t BHI #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BHI #%d\n", number, (off*2)+4);
         break;
 
         case 9:
-            fprintf(fileX,"%x\t BLS #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BLS #%d\n", number, (off*2)+4);
         break;
 
         case 10:
-            fprintf(fileX,"%x\t BGE #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BGE #%d\n", number, (off*2)+4);
         break;
 
         case 11:
-            fprintf(fileX,"%x\t BLT #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BLT #%d\n", number, (off*2)+4);
         break;
 
         case 12:
-            fprintf(fileX,"%x\t BGT #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BGT #%d\n", number, (off*2)+4);
         break;
         
         case 13:
-            fprintf(fileX,"%x\t BLE #%d\n", number, (imm*2)+4);
+            fprintf(fileX,"%x\t BLE #%d\n", number, (off*2)+4);
         break;
 
         default:
@@ -318,51 +318,51 @@ void DecodeBcond_OFFSET(int number, FILE *fileX){
 //B #offset*2+4
 void DecodeB_OFFSET(int number, FILE *fileX){
 
-    int imm = immed11(number);
+    int off = immed11(number);                               //pega os bits de 0-10 de number, define um offset de 11 bits
 
-    fprintf(fileX,"%x\t B #%d\n", number, (imm*2)+4);
+    fprintf(fileX,"%x\t B #%d\n", number, (off*2)+4);
 }
 
 //SWI #imm8
 void DecodeSWI_IMM8(int number, FILE *fileX){
 
-    int imm = immed8(number);
+    int imm = immed8(number);                               //pega os bits de 0-7 de number, define um imediato de 8 bits
 
     fprintf(fileX,"%x\t SWI #%d\n", number, imm);
 }
 
 //BLX #offset*2+4
 void DecodeBLX_OFFSET(int number, FILE *fileX){
-    int maskIMM = 0x3ff;
+    int maskOFF = 0x3ff;
 
-    int imm = ((number & (maskIMM << 1)) >> 1);
+    int off = ((number & (maskOFF << 1)) >> 1);             //pega os bits 1-10 de number, define um offset de 10 bits
 
-    fprintf(fileX,"%x\t BLX #%d\n", number, (imm*2)+4);
+    fprintf(fileX,"%x\t BLX #%d\n", number, (off*2)+4);
 }
 
 //BL #offset*2+4
 void DecodeBL_OFFSET(int number, FILE *fileX){
 
-    int imm = immed11(number);
+    int off = immed11(number);                             //pega os bits de 0-10 de number, define um offset de 11 bits
 
-    fprintf(fileX,"%x\t BL #%d\n", number, (imm*2)+4);
+    fprintf(fileX,"%x\t BL #%d\n", number, (off*2)+4);
 }
 
 //LDR Ld, [pc, #imm8*4]
 void DecodeLDR_LD_PC_IMM8X4(int number, FILE *fileX){
-    int Ld = ((number & (mask7 << 8)) >> 8);
+    int Ld = ((number & (mask7 << 8)) >> 8);                                   //pega os bits 8-10 de number, define Ld
 
-    fprintf(fileX,"%x\t LDR r%d, [pc, #%d]\n", number, Ld, first3Bits(number));
+    fprintf(fileX,"%x\t LDR r%d, [pc, #%d]\n", number, Ld, immed8(number));    //immed8(number) pega os bits 0-7 de number, define um imediato de 8 bits
 }
 
 //STR|STRH|STRB|LDRSB Ld, [Ln, Lm]
 void DecodeSTR_STRH_STRB_LDRSB_LD_LN_LM(int number, FILE *fileX){
     int maskOP = 0x2;
-    int Lm = ((number & (mask7 << 6)) >> 6);
-    int Ln = ((number & (mask7 << 3)) >> 3);
-    int Ld = (number & mask7);
-    int op = ((number & (maskOP) << 9) >> 9);
-
+    int Lm = ((number & (mask7 << 6)) >> 6);                                   //pega os bits 6-8 de number, define Lm
+    int Ln = ((number & (mask7 << 3)) >> 3);                                   //pega os bits 3-5 de number, define Ln
+    int Ld = (number & mask7);                                                 //pega os bits 0-2 de number, define Ld
+    int op = ((number & (maskOP) << 9) >> 9);                                  //pega os bits 9-10 de number, define qual instrução será usada
+                                                                               //STR=0, STRH=1, STRB=2, LDRSB=3
     if(op == 0){
         fprintf(fileX,"%x\t STR r%d, [r%d, r%d]\n", number, Ld, Ln, Lm);
     }else if(op == 1){
@@ -378,11 +378,11 @@ void DecodeSTR_STRH_STRB_LDRSB_LD_LN_LM(int number, FILE *fileX){
 //LDR_LDRH_LDRB_LDRSH Ld, [Ln, Lm]
 void DecodeLDR_LDRH_LDRB_LDRSH_LD_LN_LM(int number, FILE *fileX){
     int maskOP = 0x2;
-    int Lm = ((number & (mask7 << 6)) >> 6);
-    int Ln = ((number & (mask7 << 3)) >> 3);
-    int Ld = (number & mask7);
-    int op = ((number & (maskOP << 9)) >> 9);
-
+    int Lm = ((number & (mask7 << 6)) >> 6);                                  //pega os bits 6-8 de number, define Lm
+    int Ln = ((number & (mask7 << 3)) >> 3);                                  //pega os bits 3-5 de number, define Ln
+    int Ld = (number & mask7);                                                //pega os bits 0-2 de number, define Ld
+    int op = ((number & (maskOP << 9)) >> 9);                                 //pega os bits 9-10 de number, define qual instrução será usada
+                                                                              //LDR=0, LDRH=1, LDRSH=2, LDRSH= 3
     if(op == 0){
         fprintf(fileX,"%x\t LDR r%d, [r%d, r%d]\n", number, Ld, Ln, Lm);
     }else if(op == 1){
@@ -398,10 +398,10 @@ void DecodeLDR_LDRH_LDRB_LDRSH_LD_LN_LM(int number, FILE *fileX){
 //STR_LDR Ld, [Ln, #imm5*4]
 void DecodeSTR_LDR_LD_LN_IMM5(int number, FILE *fileX){
 
-    int op = ((number & (mask1 << 11)) >> 11);
-    int imm = immed5(number);
-    int Ln = ((number & (mask7 << 3)) >> 3);
-    int Ld = (number & mask7);
+    int op = ((number & (mask1 << 11)) >> 11);                                  //pega o bit 11 de number, define a instrução usada. STR=0, LDR=1
+    int imm = immed5(number);                                                   //pega os bits 6-10 de number, define um imediato de 5 bits
+    int Ln = ((number & (mask7 << 3)) >> 3);                                    //pega os bits 3-5 de number, define Ln
+    int Ld = (number & mask7);                                                  //pega os bits 0-2 de number, define Ld
 
     if(op == 0){
         fprintf(fileX,"%x\t STR r%d, [r%d, #%d]\n", number, Ld, Ln, imm*4);
@@ -413,10 +413,10 @@ void DecodeSTR_LDR_LD_LN_IMM5(int number, FILE *fileX){
 //STRB_LDRB Ld, [Ln, #imm5]
 void DecodeSTRB_LDRB_LD_LN_IMM5(int number, FILE *fileX){
 
-    int op = ((number & (mask1 << 11)) >> 11);
-    int imm = immed5(number);
-    int Ln = ((number & (mask7 << 3)) >> 3);
-    int Ld = (number & mask7);
+    int op = ((number & (mask1 << 11)) >> 11);                                 //pega o bit 11 de number, define a instrução usada. STRB=0, LDRB=1
+    int imm = immed5(number);                                                  //pega os bits 6-10 de number, define um imediato de 5 bits
+    int Ln = ((number & (mask7 << 3)) >> 3);                                   //pega os bits 3-5 de number, define Ln
+    int Ld = (number & mask7);                                                 //pega os bits 0-2 de number, define Ld
 
     if(op == 0){
         fprintf(fileX,"%x\t STRB r%d, [r%d, #%d]\n", number, Ld, Ln, imm);
@@ -428,10 +428,10 @@ void DecodeSTRB_LDRB_LD_LN_IMM5(int number, FILE *fileX){
 //STRH_LDRH Ld, [Ln, imm5*2]
 void DecodeSTRH_LDRH_LD_LN_IMM5(int number, FILE *fileX){
 
-    int op = ((number & (mask1 << 11)) >> 11);
-    int imm = immed5(number);
-    int Ln = ((number & (mask7 << 3)) >> 3);
-    int Ld = (number & mask7);
+    int op = ((number & (mask1 << 11)) >> 11);                                 //pega o bit 11 de number, define a instrução usada. STRH=0, LDRH=1
+    int imm = immed5(number);                                                  //pega os bits 6-10 de number, define um imediato de 5 bits
+    int Ln = ((number & (mask7 << 3)) >> 3);                                   //pega os bits 3-5 de number, define Ln
+    int Ld = (number & mask7);                                                 //pega os bits 0-2 de number, define Ld
 
     if(op == 0){
         fprintf(fileX,"%x\t STRH r%d, [r%d, #%d]\n", number, Ld, Ln, imm*2);
@@ -444,9 +444,9 @@ void DecodeSTRH_LDRH_LD_LN_IMM5(int number, FILE *fileX){
 //STR_LDR Ld, [sp, #imm8*4]
 void DecodeSTR_LDR_SP_IMM8(int number, FILE *fileX){
 
-    int op = ((number & (mask1 << 11)) >> 11);
-    int imm = immed8(number);
-    int Ld = ((number & (mask7 << 8)) >> 8);
+    int op = ((number & (mask1 << 11)) >> 11);                                //pega o bit 11 de number, define a instrução usada. STR=0, LDR=1 
+    int imm = immed8(number);                                                 //pega os bits 0-7 de number, define um imediato de 8 bits
+    int Ld = ((number & (mask7 << 8)) >> 8);                                  //pega os bits 8-10 de number, define Ld
 
     if(op == 0){
         fprintf(fileX,"%x\t STR r%d, [sp, #%d]\n", number, Ld, imm*4);
