@@ -99,11 +99,9 @@ void (* pDecodeSubGrupo11[])(int number,FILE *fileX) =
 };
 
 //-------------------------------------------------------------------------------
-// Bit [9,8] das instruções com os bits superiores [15-12] sendo igual a 1101
+// Bit [8] das instruções com os bits superiores [15-12] sendo igual a 1101
 void (* pDecodeGrupo1101[])(int number,FILE *fileX) =
 {                              
-  DecodeBcond_OFFSET,
-  DecodeBcond_OFFSET,
   DecodeUndefined,
   DecodeSWI_IMM8
 };
@@ -185,8 +183,12 @@ void fsubGrupo11(int number,FILE *fileX){
 //-------------------------------------------------------------------------------
 // Instruções com os bits superiores [15-12] sendo igual a 1101
 void fgrupo13(int number,FILE *fileX){
-  int indice = (number & 0x300) >> 0x8;                                          // Pegando bits [9,8]
-  (* pDecodeGrupo1101[indice])(number,fileX);
+  if(((number & (0xF00)) >> 0X8) < 0xE)
+    DecodeBcond_OFFSET(number, fileX);                                          // cond < 1110
+  else{
+    int indice = (number & 0x100) >> 0x8;                                       // Pegando bit [8]
+    (* pDecodeGrupo1101[indice])(number,fileX);
+  }
 }
 
 //-------------------------------------------------------------------------------
