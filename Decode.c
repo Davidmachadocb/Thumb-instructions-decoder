@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "Decode.h"
 
+int poff = 0;                                                                   // poff em seu estado original
+
 void highregister(int H, FILE *fileX){                                          // Imprime como deve ser chamado cada high-register (r8-r15) 
     if(H == 13)
         fprintf(fileX,"sp");
@@ -722,5 +724,23 @@ void underfinedGrup04(int number,FILE *fileX){
   fprintf(fileX, "%x\t Sem instrução correpondente\n",number);
 }
 
+//-------------------------------------------------------------------------------
+// Instrução não definida
+void underfined(int number,FILE *fileX){
+  fprintf(fileX, "%x\t Undefined\n",number);
+}
+
+void fPoff(int number, FILE *fileX,int flagPoff){
+    if(flagPoff == 0){                                                          // Atribuindo novo valor a poff
+        poff = number;
+    }
+    else if(flagPoff == 1){                                                     // Error na instrução que alterou poff anteriormente
+        fprintf(fileX, "%x\t Error\n",poff);
+        poff = 0;                                                               // poff em seu estado natural
+    }
+    else{
+        fprintf(fileX, "%x\t\n",poff);                                          // instrução que alterou poff anteriormente foi sucedida por uma BLX ou BL que usa o poff
+    }
+}
 
 
