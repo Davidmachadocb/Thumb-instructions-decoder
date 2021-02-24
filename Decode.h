@@ -99,8 +99,8 @@ void DecodeBLX_OFFSET(int number, FILE *fileX);
 
 void DecodeBL_OFFSET(int number, FILE *fileX);
 
-// obs
-void underfinedGrup04(int number,FILE *fileX);
+void underfined(int number,FILE *fileX);
 
 void fPoff(int number,FILE *fileX,int flagPoff);
+
 #endif // DECODE_H_INCLUDED
