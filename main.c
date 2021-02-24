@@ -30,7 +30,7 @@ int main(){
             case(1):
 				//Nesse programa vai ser considerado que sempre o nome do arquivo de entrada vai ser input e o arquivo de saida gerado vai ser o output
                 ptr_input = fopen("input.in", "r");   //fopen para que o ponteiro aponte para o arquivo input e que so tenha permissão de leitura do arquivo
-                ptr_output = fopen("output.txt", "w"); //fopen para criar o arquivo de saida e assim poder escrever nele.
+                ptr_output = fopen("output.out", "w"); //fopen para criar o arquivo de saida e assim poder escrever nele.
 
 				//Caso de teste para verificar o que causou a ptr_input ser NULL, um causa pode ser que o arquivo não existe, possui um nome diferente
 				// ou outro tipo de erro.
