@@ -19,8 +19,8 @@ void fgrupo13(int number,FILE *fileX);
 
 void fgrupo14(int number,FILE *fileX);
 
-void fgrupo15(int number,FILE *fileX);
-
 void mapFunction(int number,FILE *fileX);
+
+int Poff();
 
 #endif // MAP_H_INCLUDED
