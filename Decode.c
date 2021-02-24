@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "Decode.h"
 
+int poff=0;
+
 void highregister(int Hm, FILE *fileX){
     if(Hm == 13)
         fprintf(fileX,"sp");
@@ -333,11 +335,12 @@ void DecodeSWI_IMM8(int number, FILE *fileX){
 
 //BLX #offset*2+4
 void DecodeBLX_OFFSET(int number, FILE *fileX){
+    
     int maskOFF = 0x3ff;
 
     int off = ((number & (maskOFF << 1)) >> 1);             //pega os bits 1-10 de number, define um offset de 10 bits
 
-    fprintf(fileX,"%x\t BLX #%d\n", number, (off*4)+4);
+    fprintf(fileX,"%x\t BLX #%d\n", number, ~(((poff << 12)+(off*4)+4) & 3));
 }
 
 //BL #offset*2+4
@@ -345,7 +348,7 @@ void DecodeBL_OFFSET(int number, FILE *fileX){
 
     int off = immed11(number);                             //pega os bits de 0-10 de number, define um offset de 11 bits
 
-    fprintf(fileX,"%x\t BL #%d\n", number, (off*2)+4);
+    fprintf(fileX,"%x\t BL #%d\n", number, ((poff << 12)+(off*2)+4));
 }
 
 //LDR Ld, [pc, #imm8*4]
