@@ -333,7 +333,7 @@ void DecodeSWI_IMM8(int number, FILE *fileX){
     fprintf(fileX,"%x\t SWI #%d\n", number, imm);
 }
 
-//BLX #offset*2+4
+//BLX #((offset*2+4)+(poff << 12)) &~ 3
 void DecodeBLX_OFFSET(int number, FILE *fileX){
     
     int maskOFF = 0x3ff;
@@ -343,7 +343,7 @@ void DecodeBLX_OFFSET(int number, FILE *fileX){
     fprintf(fileX,"%x\t BLX #%d\n", number, (((poff << 12)+(off*4)+4) &~ 3));
 }
 
-//BL #offset*2+4
+//BL #(offset*2+4)+(poff << 12)
 void DecodeBL_OFFSET(int number, FILE *fileX){
 
     int off = immed11(number);                             //pega os bits de 0-10 de number, define um offset de 11 bits
