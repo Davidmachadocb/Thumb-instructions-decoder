@@ -8,14 +8,14 @@
 #define mask3 0x3
 #define mask1 0x1
 
-#define immed8(number) ((number) & 0xFF)
-#define immed5(number) (((number) & 0x7C0) >> 0x6)
-#define immed7(number) ((number) & 0x007F)
-#define immed11(number) ((number) & 0x7ff)
+#define immed8(number) ((number) & 0xFF)                                        // bits [0-8] de number
+#define immed5(number) (((number) & 0x7C0) >> 0x6)                              // bits [6-10] de number
+#define immed7(number) ((number) & 0x007F)                                      // bits [0-6] de number
+#define immed11(number) ((number) & 0x7ff)                                      // bits [0-10] de number
 
-#define first3Bits(number) ((number) & 0x7)
-#define second3Bits(number) (((number) & 0x38) >> 0x3)
-#define third3Bits(number) (((number) & 0x1C0) >> 0x6)
+#define first3Bits(number) ((number) & 0x7)                                     // bits [0-2] de number
+#define second3Bits(number) (((number) & 0x38) >> 0x3)                          // bits [3-5] de number
+#define third3Bits(number) (((number) & 0x1C0) >> 0x6)                          // bits [6-8]
 
 void highregister(int Hm, FILE *fileX);
 
