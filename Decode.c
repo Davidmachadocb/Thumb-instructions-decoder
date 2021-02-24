@@ -23,9 +23,9 @@ void DecodeLSL_LSR_LD_LM_IMM5(int number, FILE *fileX){
     int op = (number & (mask1 << 0xB)) >> 0xB;                                  // pega o Bit [11] para escolher a instrução
 
     if(op == 0)
-        fprintf(fileX,"%x\t LSL r%d, r%d, #%d \n",number,first3Bits(number),second3Bits(number),immed5(number));
+        fprintf(fileX,"0%x\t LSL r%d, r%d, #%d \n",number,first3Bits(number),second3Bits(number),immed5(number));
     else
-        fprintf(fileX,"%x\t LSR r%d, r%d, #%d \n",number,first3Bits(number),second3Bits(number),immed5(number));
+        fprintf(fileX,"0%x\t LSR r%d, r%d, #%d \n",number,first3Bits(number),second3Bits(number),immed5(number));
 }
 
 // < ASR > Ld, Lm, #<immed5>
@@ -286,9 +286,8 @@ void DecodeBKPT_IMM8(int number, FILE *fileX){
 
 //B<cond> #offset*2+4
 void DecodeBcond_OFFSET(int number, FILE *fileX){
-    int maskC = 0xf;
 
-    int cond = ((number & (maskC << 8)) >> 8);                         //pega os bits 8-11 de number, define o tipo de condição e precisa ser 
+    int cond = ((number & (maskF << 8)) >> 8);                         //pega os bits 8-11 de number, define o tipo de condição e precisa ser 
     int off = immed8(number);                                          //pega os bits 0-7 de number, define um offset de 8 bits
 
     switch(cond){
@@ -396,11 +395,10 @@ void DecodeLDR_LD_PC_IMM8X4(int number, FILE *fileX){
 
 //STR|STRH|STRB|LDRSB Ld, [Ln, Lm]
 void DecodeSTR_STRH_STRB_LDRSB_LD_LN_LM(int number, FILE *fileX){
-    int maskOP = 0x2;
     int Lm = ((number & (mask7 << 6)) >> 6);                                   //pega os bits 6-8 de number, define Lm
     int Ln = ((number & (mask7 << 3)) >> 3);                                   //pega os bits 3-5 de number, define Ln
     int Ld = (number & mask7);                                                 //pega os bits 0-2 de number, define Ld
-    int op = ((number & (maskOP) << 9) >> 9);                                  //pega os bits 9-10 de number, define qual instrução será usada
+    int op = ((number & (mask3) << 9) >> 9);                                  //pega os bits 9-10 de number, define qual instrução será usada
                                                                                //STR=0, STRH=1, STRB=2, LDRSB=3
     if(op == 0){
         fprintf(fileX,"%x\t STR r%d, [r%d, r%d]\n", number, Ld, Ln, Lm);
@@ -416,11 +414,10 @@ void DecodeSTR_STRH_STRB_LDRSB_LD_LN_LM(int number, FILE *fileX){
 
 //LDR_LDRH_LDRB_LDRSH Ld, [Ln, Lm]
 void DecodeLDR_LDRH_LDRB_LDRSH_LD_LN_LM(int number, FILE *fileX){
-    int maskOP = 0x2;
     int Lm = ((number & (mask7 << 6)) >> 6);                                  //pega os bits 6-8 de number, define Lm
     int Ln = ((number & (mask7 << 3)) >> 3);                                  //pega os bits 3-5 de number, define Ln
     int Ld = (number & mask7);                                                //pega os bits 0-2 de number, define Ld
-    int op = ((number & (maskOP << 9)) >> 9);                                 //pega os bits 9-10 de number, define qual instrução será usada
+    int op = ((number & (mask3 << 9)) >> 9);                                 //pega os bits 9-10 de number, define qual instrução será usada
                                                                               //LDR=0, LDRH=1, LDRSH=2, LDRSH= 3
     if(op == 0){
         fprintf(fileX,"%x\t LDR r%d, [r%d, r%d]\n", number, Ld, Ln, Lm);
