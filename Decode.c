@@ -376,7 +376,7 @@ void DecodeBLX_OFFSET(int number, FILE *fileX){
 
     int off = ((number & (maskOFF << 1)) >> 1);             //pega os bits 1-10 de number, define um offset de 10 bits
 
-    fprintf(fileX,"%x\t BLX #%d\n", number, (((poff << 12)+(off*4)+4) &~ 3));
+    fprintf(fileX,"%x\t BLX #%d\n", number, ((((poff << 12) & 0xffff)+(off*4)+4) &~ 3));
 }
 
 //BL #(offset*2+4)+(poff << 12)
@@ -384,7 +384,7 @@ void DecodeBL_OFFSET(int number, FILE *fileX){
 
     int off = immed11(number);                             //pega os bits de 0-10 de number, define um offset de 11 bits
 
-    fprintf(fileX,"%x\t BL #%d\n", number, ((poff << 12)+(off*2)+4));
+    fprintf(fileX,"%x\t BL #%d\n", number, (((poff << 12) & 0xffff)+(off*2)+4));
 }
 
 //LDR Ld, [pc, #imm8*4]
