@@ -2,22 +2,23 @@
 #include <stdlib.h>
 #include "Decode.h"
 
-int poff=0;
-
-void highregister(int Hm, FILE *fileX){
-    if(Hm == 13)
+void highregister(int H, FILE *fileX){                                          // Imprime como deve ser chamado cada high-register (r8-r15) 
+    if(H == 13)
         fprintf(fileX,"sp");
-    else if(Hm == 14)
+    else if(H == 14)
         fprintf(fileX,"lr");
-    else if(Hm == 15)
+    else if(H == 15)
         fprintf(fileX,"pc");
     else
-        fprintf(fileX,"r%d",Hm);
+        fprintf(fileX,"r%d",H);
 }
 
 // < LSL | LSR > Ld, Lm, #<immed5>
+// Ld = first3Bits(number). Logo os bits [0,1,2]
+// Lm = second3Bits(number). Logo os bits [3,4,5]
+// immed5 = immed5(number). Logo os bits [6,7,8,9,10]
 void DecodeLSL_LSR_LD_LM_IMM5(int number, FILE *fileX){
-    int op = (number & (mask1 << 0xB)) >> 0xB;                                   // Bit [9]
+    int op = (number & (mask1 << 0xB)) >> 0xB;                                  // pega o Bit [11] para escolher a instrução
 
     if(op == 0)
         fprintf(fileX,"%x\t LSL r%d, r%d, #%d \n",number,first3Bits(number),second3Bits(number),immed5(number));
@@ -26,13 +27,16 @@ void DecodeLSL_LSR_LD_LM_IMM5(int number, FILE *fileX){
 }
 
 // < ASR > Ld, Lm, #<immed5>
+// Ld = first3Bits(number). Logo os bits [0,1,2]
+// Lm = second3Bits(number). Logo os bits [3,4,5]
+// immed5 = immed5(number). Logo os bits [6,7,8,9,10]
 void DecodeASR_LD_LM_IMM5(int number, FILE *fileX){
     fprintf(fileX,"%x\t ASR r%d, r%d, #%d \n",number,first3Bits(number),second3Bits(number),immed5(number));
 }
 
 // < ADD | SUB > Ld, Ln, Lm
 void DecodeADD_SUB_LD_LN_LM(int number, FILE *fileX){
-    int op = (number & (mask1 << 0x9)) >> 0x9;                                  // Bit [9]
+    int op = (number & (mask1 << 0x9)) >> 0x9;                                  // pega o Bit [9] para escolher a instrução
 
     if(op == 0)
         fprintf(fileX,"%x\t ADD r%d, r%d, r%d \n",number,first3Bits(number),second3Bits(number),third3Bits(number));
@@ -41,9 +45,12 @@ void DecodeADD_SUB_LD_LN_LM(int number, FILE *fileX){
 }
 
 // < ADD | SUB > com Ld, Ln, #<immed3>
+// Ld = first3Bits(number). Logo os bits [0,1,2]
+// Ln = second3Bits(number). Logo os bits [3,4,5]
+// immed3 será os bits [6,7,8]
 void DecodeADD_SUB_LD_LN_IMM3(int number, FILE *fileX){
-    int Immed3 = (((mask7 << 0x6) & number) >> 0x6);                            // Bits [6-8]
-    int op = (number & (mask1 << 0x9)) >> 0x9;                                  // Bit [9]
+    int Immed3 = (((mask7 << 0x6) & number) >> 0x6);                            // pega os bits 6-8 de number, define um imediato de 3 bits
+    int op = (number & (mask1 << 0x9)) >> 0x9;                                  // pega o Bit [9] para escolher a instrução
 
     if(op == 0)
         fprintf(fileX,"%x\t ADD r%d, r%d, #%d \n",number,first3Bits(number),second3Bits(number),Immed3);
@@ -52,9 +59,11 @@ void DecodeADD_SUB_LD_LN_IMM3(int number, FILE *fileX){
 }
 
 // < MOV | CMP > Ld, #<immed8>
+// Ld_Ln será os bits [8,9,10]
+// immed8 = immed8(number). Logo os bits [0,1,2,3,4,5,6,7]
 void DecodeMOV_CMP_LD_IMM8(int number, FILE *fileX){
-    int Ld_Ln = (number & (mask7 << 0x8)) >> 0x8;                               // Bits [8-10]
-    int op = (number & (mask1 << 0xB)) >> 0xB;                                  // Bit [11]
+    int Ld_Ln = (number & (mask7 << 0x8)) >> 0x8;                               // pega os bits 8-10 de number, define registrador Ld_Ln
+    int op = (number & (mask1 << 0xB)) >> 0xB;                                  // pega o Bit [11] para escolher a instrução
 
     if(op == 0)
         fprintf(fileX,"%x\t MOV r%d, #%d \n",number,Ld_Ln,immed8(number));
@@ -63,9 +72,11 @@ void DecodeMOV_CMP_LD_IMM8(int number, FILE *fileX){
 }
 
 // < ADD | SUB > Ld, #<immed8>
+// Ld será os bits [8,9,10]
+// immed8 = immed8(number). Logo os bits [0,1,2,3,4,5,6,7]
 void DecodeADD_SUB_LD_IMM8(int number, FILE *fileX){
-    int Ld = (number & (mask7 << 0x8)) >> 0x8;                                  // Bits [8-10]
-    int op = (number & (mask1 << 0xB)) >> 0xB;                                  // Bit [11]
+    int Ld = (number & (mask7 << 0x8)) >> 0x8;                                  // pega os bits 8-10 de number, define registrador Ld
+    int op = (number & (mask1 << 0xB)) >> 0xB;                                  // pega o Bit [11] para escolher a instrução
 
     if(op == 0)
         fprintf(fileX,"%x\t ADD r%d, #%d \n",number,Ld,immed8(number));
@@ -74,8 +85,10 @@ void DecodeADD_SUB_LD_IMM8(int number, FILE *fileX){
 }
 
 // < AND | EOR | LSL | LSR >  Ld, Lm
+// Ld = first3Bits(number). Logo os bits [0,1,2]
+// Lm = second3Bits(number). Logo os bits [3,4,5]
 void DecodeAND_EOR_LSL_LSR_LD_LM(int number, FILE *fileX){
-    int op = (number & 0xC0) >> 6;                                              // Bits [6,7]
+    int op = (number & 0xC0) >> 6;                                              // pega os Bits 6 e 7 para escolher uma das 4 instruções
 
     if(op == 0)
         fprintf(fileX,"%x\t AND r%d, r%d \n",number,first3Bits(number),second3Bits(number));
@@ -88,8 +101,10 @@ void DecodeAND_EOR_LSL_LSR_LD_LM(int number, FILE *fileX){
 }
 
 // < ASR | ADC | SBC | ROR > Ld, Lm/Ls
+// Ld = first3Bits(number). Logo os bits [0,1,2]
+// Lm/Ls = second3Bits(number). Logo os bits [3,4,5]
 void DecodeASR_ADC_SBC_ROR_LD_LM_LS(int number, FILE *fileX){
-    int op = (number & 0xC0) >> 6;                                              // Bits [6,7]
+    int op = (number & 0xC0) >> 6;                                              // pega os Bits 6 e 7 para escolher uma das 4 instruções
 
     if(op == 0)
         fprintf(fileX,"%x\t ASR r%d, r%d \n",number,first3Bits(number),second3Bits(number));
@@ -102,8 +117,10 @@ void DecodeASR_ADC_SBC_ROR_LD_LM_LS(int number, FILE *fileX){
 }
 
 // < TST | NEG | CMP | CMN > Ld/Ln, Lm
+// Ld/Ln = first3Bits(number). Logo os bits [0,1,2]
+// Lm = second3Bits(number). Logo os bits [3,4,5]
 void DecodeTST_NEG_CMP_CMN_LD_LN_LM(int number, FILE *fileX){
-    int op = (number & 0xC0) >> 6;                                              // Bits [6,7]
+    int op = (number & 0xC0) >> 6;                                              // pega os Bits 6 e 7 para escolher uma das 4 instruções
 
     if(op == 0)
         fprintf(fileX,"%x\t TST r%d, r%d \n",number,first3Bits(number),second3Bits(number));
@@ -116,8 +133,10 @@ void DecodeTST_NEG_CMP_CMN_LD_LN_LM(int number, FILE *fileX){
 }
 
 // < ORR | MUL | BIC | MVN >  Ld, Lm
+// Ld = first3Bits(number). Logo os bits [0,1,2]
+// Lm = second3Bits(number). Logo os bits [3,4,5]
 void DecodeORR_MUL_BIC_MVN_LD_LM(int number, FILE *fileX){
-    int op = (number & 0xC0) >> 6;                                              // Bits [6,7]
+    int op = (number & 0xC0) >> 6;                                              // pega os Bits 6 e 7 para escolher uma das 4 instruções
 
     if(op == 0)
         fprintf(fileX,"%x\t ORR r%d, r%d \n",number,first3Bits(number),second3Bits(number));
@@ -130,82 +149,97 @@ void DecodeORR_MUL_BIC_MVN_LD_LM(int number, FILE *fileX){
 }
 
 // < CPY > Ld, Lm
+// Ld = first3Bits(number). Logo os bits [0,1,2]
+// Lm = second3Bits(number). Logo os bits [3,4,5]
 void DecodeCPY_LD_LM(int number, FILE *fileX){
     fprintf(fileX,"%x\t CPY r%d, r%d \n",number,first3Bits(number),second3Bits(number));
 }
 
 // < ADD | MOV > Ld, Hm
+// Ld = first3Bits(number). Logo os bits [0,1,2]
+// Hm = bit 3 sendo 1 e bits 0,1 e 2 sendo formado pelos bits [3,4,5] de number
 void DecodeADD_MOV_LD_HM(int number, FILE *fileX){
     int Hm = second3Bits(number) | 0x8;                                         // Transformando em um high-register
-    int op = (number & (mask1 << 0x9)) >> 0x9;                                  // Bit [9]
+    int op = (number & (mask1 << 0x9)) >> 0x9;                                  // pega o bit 9 para escolher uma das 2 instruções
 
     if(op == 0)
         fprintf(fileX,"%x\t ADD r%d,",number,first3Bits(number));
     else
         fprintf(fileX,"%x\t MOV r%d,",number,first3Bits(number));
-    highregister(Hm,fileX);
+    highregister(Hm,fileX);                                                     // Imprime na forma correta de chamar o registrador
     fprintf(fileX,"\n");
 }
 
 // < ADD | MOV > Hd, Lm
+// < ADD | MOV > Ld, Hm
+// Hd = bit 3 sendo 1 e bits 0,1 e 2 sendo formado pelos bits [0,1,2] de number 
+// Lm = second3Bits(number). Logo os bits [3,4,5]
 void DecodeADD_MOV_HD_LM(int number, FILE *fileX){
     int Hd = first3Bits(number) | 0x8;                                          // Transformando em um high-register
-    int op = (number & (mask1 << 0x9)) >> 0x9;                                  // Bit [9]
+    int op = (number & (mask1 << 0x9)) >> 0x9;                                  // pega o bit 9 para escolher uma das 2 instruções
 
     if(op == 0)
         fprintf(fileX,"%x\t ADD ",number);
     else
         fprintf(fileX,"%x\t MOV ",number);
-    highregister(Hd,fileX);
-    fprintf(fileX,", r%d\n", second3Bits(number));
+    highregister(Hd,fileX);                                                     // Imprime na forma correta de chamar o registrador
+    fprintf(fileX,", r%d\n", second3Bits(number));                              // Imprimindo Lm
 }
 
 // < ADD | MOV > Hd, Hm
+// Hd = bit 3 sendo 1 e bits 0,1 e 2 sendo formado pelos bits [0,1,2] de number
+// Hm = bit 3 sendo 1 e bits 0,1 e 2 sendo formado pelos bits [3,4,5] de number
 void DecodeADD_MOV_HD_HM(int number, FILE *fileX){
     int Hm = second3Bits(number) | 0x8;                                         // Transformando em um high-register
     int Hd = first3Bits(number) | 0x8;                                          // Transformando em um high-register
-    int op = (number & (mask1 << 0x9)) >> 0x9;                                  // Bit [9]
+    int op = (number & (mask1 << 0x9)) >> 0x9;                                  // pega o bit 9 para escolher uma das 2 instruções
 
     if(op == 0)
         fprintf(fileX,"%x\t ADD ",number);                    
     else
         fprintf(fileX,"%x\t MOV ",number);                     
     
-    highregister(Hd,fileX);
+    highregister(Hd,fileX);                                                     // Imprime na forma correta de chamar o registrador
     fprintf(fileX,", ");
-    highregister(Hm,fileX);
+    highregister(Hm,fileX);                                                     // Imprime na forma correta de chamar o registrador
     fprintf(fileX,"\n");                     
 
 }
 
 // < CMP > Ln, Hm
+// Ln = first3Bits(number). Logo os bits [0,1,2]
+// Hm = bit 3 sendo 1 e bits 0,1 e 2 sendo formado pelos bits [3,4,5] de number
 void DecodeCMP_LN_HM(int number, FILE *fileX){
     int Hm = second3Bits(number) | 0x8;                                         // Transformando em um high-register
 
     fprintf(fileX,"%x\t CMP r%d, ",number,first3Bits(number));
-    highregister(Hm,fileX);
+    highregister(Hm,fileX);                                                     // Imprime na forma correta de chamar o registrador
     fprintf(fileX,"\n");
 }
 
 // < CMP > Hn, Lm
+// Hn = bit 3 sendo 1 e bits 0,1 e 2 sendo formado pelos bits [0,1,2] de number 
+// Lm = second3Bits(number). Logo os bits [3,4,5]
 void DecodeCMP_HN_LM(int number, FILE *fileX){
     int Hn = first3Bits(number) | 0x8;                                          // Transformando em um high-register
 
     fprintf(fileX,"%x\t CMP ",number);
-    highregister(Hn,fileX);
+    highregister(Hn,fileX);                                                     // Imprime na forma correta de chamar o registrador
     fprintf(fileX,", r%d\n", second3Bits(number));         
 }
 
 // < CMP > Hn, Hm
+// Hn = bit 3 sendo 1 e bits 0,1 e 2 sendo formado pelos bits [0,1,2] de number
+// Hm = bit 3 sendo 1 e bits 0,1 e 2 sendo formado pelos bits [3,4,5] de number
 void DecodeCMP_HN_HM(int number, FILE *fileX){
     int Hm = second3Bits(number) | 0x8;                                         // Transformando em um high-register
     int Hn = first3Bits(number) | 0x8;                                          // Transformando em um high-register
 
     fprintf(fileX,"%x\t CMP ",number);                        
     
-    highregister(Hn,fileX);
-    fprintf(fileX,", ");
-    highregister(Hm,fileX);
+    highregister(Hn,fileX);                                                     // Imprime na forma correta de chamar o registrador
+    fprintf(fileX,", ");                                                        
+    highregister(Hm,fileX);                                                     // Imprime na forma correta de chamar o registrador
     fprintf(fileX,"\n");                        
 
 }
@@ -461,109 +495,124 @@ void DecodeSTR_LDR_SP_IMM8(int number, FILE *fileX){
 // <PUSH | POP> {register_list, R}
 void DecodePUSH_POP(int number, FILE *fileX){
     if((number & 0xFF) > 0){
-        int op = (number & (mask1 << 0xB)) >> 0xB;
-        int R  = (number & (mask1 << 0x8)) >> 0x8;
+        int op = (number & (mask1 << 0xB)) >> 0xB;                              // pega o Bit 11 para escolher uma das 2 instruções
+        int R  = (number & (mask1 << 0x8)) >> 0x8;                              // pega o Bit 8 para saber se coloca ou não lr para push e pc para pop
 
-        if(op == 0){
+        if(op == 0){                                                            // escolhe se é push ou pop e já imprime no arquivo
             fprintf(fileX,"%x\t PUSH {",number); 
         }
         else{
             fprintf(fileX,"%x\t POP {",number);
         }
 
+                                                                                // Formar saída da lista de registradores ativos
+                                                                                // Obs: Assim que um registrador estiver apto para ser impresso, ele será
+                                                                                // botaVirg para sinalizar quando deve por uma vírgula após a último registrador impresso
+                                                                                // c dirá a quantidade de bits 1 sequenciais
+                                                                                // register_list vai armazenar os índices de 0 até 7 que estão ativos (logo igual a 1) sequencialmente (sem 0 entre eles)
         int c = 0, botaVirg = 0;
         int register_list[8];
-        int value = number & 0xFF;
+        int value = number & 0xFF;                                              // Pegando somente os bits [0-7]
 
-        for(int i = 0; i < 9; i++)
+        for(int i = 0; i < 9; i++)                                              // i até 8, pois caso o bit 7 esteja ativo será preciso imprimir-lo
         {
-            if((value & 0x1) == 1){ 
-                register_list[c] = i;
+            if((value & 0x1) == 1){                                             // Verifica se o bit em que estou é 1         
+                register_list[c] = i;                                           // Se for, então armazeno seu índice em register_list e incrementa c
                 c++;
                 
             }
-            else if(c > 0){
+            else if(c > 0){                                                     // Se o bit em que estou foi 0 e meu c é maior que 0, então posso ter ao menos um registrador para ser impresso
                 if(botaVirg > 0){
                     fprintf(fileX, ",");
                 }
-
-                if(c == 1){
+                                                                                // Haverá somente uma das 3 opções de impressão:            
+                if(c == 1)                                                      // 1) Imprimindo apenas um registrador;
+                {                                                               // ex = in: 0000 0001 | out: r0 sendo impresso
                     fprintf(fileX, "r%d", register_list[0]);
                 }
-                else if(c == 2){
+                else if(c == 2)                                                 // 2) Imprimindo dois registradores;
+                {                                                               // ex = in: 0000 0011 | out: r0,r1 sendo impresso
                     fprintf(fileX, "r%d, r%d", register_list[0],register_list[1]);
                 }
-                else
-                    fprintf(fileX, "r%d-r%d", register_list[0],register_list[c-1]);
+                else                                                            // 3) Imprimindo um conjunto de registradores, mas apenas será preciso <primeiro registrador> e o <último registrador> salvo em register_list;                                                            
+                    fprintf(fileX, "r%d-r%d", register_list[0],register_list[c-1]);// ex = in: 0111 1000 | out: r3-r6 sendo impresso
                 
-                c = 0;
-                botaVirg = 1;
+                c = 0;                                                          // Limpa c, pois o que já foi impresso não interessa mais
+                botaVirg = 1;                                                   // Ativa botaVirg, para sinalizar que uma vírgula precisa ser colocada antes de imprimir o novo registrador ou conjunto de registradores
             }
-            value = value >> 0x1;
+
+            value = value >> 0x1;                                               // Desloca value tendo assim bit por bit        
         }
         
 
-        if(R == 1){
+        if(R == 1){                                                             // Imprime no arquivo de saída caso R esteja ativo
             if(op == 0) fprintf(fileX, ",LR}\n");
             else fprintf(fileX, ",PC}\n");
         }
         else
             fprintf(fileX, "}\n");
     }
-    else
-        fprintf(fileX, "%d\t UNPREDICTABLE", number);        
+    else                                                                        // Caso não haja nenhum registrador, logo se do bit 0 ao 7 tiver apenas 0
+        fprintf(fileX, "%d\t UNPREDICTABLE", number);     
 }
 
 // <STMIA | LDMIA> Ln!, {register_list}
 void DecodeSTMIA_LDMIA(int number, FILE *fileX){
     if((number & 0xFF) > 0){
-        int op = (number & (mask1 << 0xB)) >> 0xB;
-        int Ln  = (number & (mask7 << 0x8)) >> 0x8;
+        int op = (number & (mask1 << 0xB)) >> 0xB;                              // pega o Bit 11 para escolher uma das 2 instruções
+        int Ln  = (number & (mask7 << 0x8)) >> 0x8;                             // pega os bits 8-10 de number, define registrador Ln
 
 
-        if(op == 0){
+        if(op == 0){                                                            // escolhe se é STMIA ou LDMIA e já imprime no arquivo
             fprintf(fileX,"%x\t STMIA r%d!, {",number,Ln); 
         }
         else{
             fprintf(fileX,"%x\t LDMIA r%d!, {",number,Ln);
         }
 
+                                                                                // Formar saída da lista de registradores ativos
+                                                                                // Obs: Assim que um registrador estiver apto para ser impresso, ele será
+                                                                                // botaVirg para sinalizar quando deve por uma vírgula após a último registrador impresso
+                                                                                // c dirá a quantidade de bits 1 sequenciais
+                                                                                // register_list vai armazenar os índices de 0 até 7 que estão ativos (logo igual a 1) sequencialmente (sem 0 entre eles)
         int c = 0, botaVirg = 0;
         int register_list[8];
-        int value = number & 0xFF;
+        int value = number & 0xFF;                                              // Pegando somente os bits [0-7]
 
-        for(int i = 0; i < 9; i++)
+        for(int i = 0; i < 9; i++)                                              // i até 8, pois caso o bit 7 esteja ativo será preciso imprimir-lo
         {
-            if((value & 0x1) == 1){ 
-                register_list[c] = i;
+            if((value & 0x1) == 1){                                             // Verifica se o bit em que estou é 1
+                register_list[c] = i;                                           // Se for, então armazeno seu índice em register_list e incrementa c
                 c++;  
             }
-            else if(c > 0){
+            else if(c > 0){                                                     // Se o bit em que estou foi 0 e meu c é maior que 0, então posso ter ao menos um registrador para ser impresso
                 if(botaVirg > 0){
-                    fprintf(fileX,",");
+                    fprintf(fileX, ",");
                 }
-
-                if(c == 1){
-                    fprintf(fileX,"r%d", register_list[0]);
+                                                                                // Haverá somente uma das 3 opções de impressão:            
+                if(c == 1)                                                      // 1) Imprimindo apenas um registrador;
+                {                                                               // ex = in: 0000 0001 | out: r0 sendo impresso
+                    fprintf(fileX, "r%d", register_list[0]);
                 }
-                else if(c == 2){
-                    fprintf(fileX,"r%d, r%d", register_list[0],register_list[1]);
+                else if(c == 2)                                                 // 2) Imprimindo dois registradores;
+                {                                                               // ex = in: 0000 0011 | out: r0,r1 sendo impresso
+                    fprintf(fileX, "r%d, r%d", register_list[0],register_list[1]);
                 }
-                else
-                    fprintf(fileX,"r%d-r%d", register_list[0],register_list[c-1]);
+                else                                                            // 3) Imprimindo um conjunto de registradores, mas apenas será preciso <primeiro registrador> e o <último registrador> salvo em register_list;                                                            
+                    fprintf(fileX, "r%d-r%d", register_list[0],register_list[c-1]);// ex = in: 0111 1000 | out: r3-r6 sendo impresso
                 
-                c = 0;
-                botaVirg = 1;
+                c = 0;                                                          // Limpa c, pois o que já foi impresso não interessa mais
+                botaVirg = 1;                                                   // Ativa botaVirg, para sinalizar que uma vírgula precisa ser colocada antes de imprimir o novo registrador ou conjunto de registradores
             }
-            value = value >> 0x1;
+
+            value = value >> 0x1;                                               // Desloca value tendo assim bit por bit        
         }
         
         fprintf(fileX, "}\n");
     }
     else
-        fprintf(fileX, "%d\t UNPREDICTABLE", number);      
+        fprintf(fileX, "%d\t UNPREDICTABLE", number);                           // Caso não haja nenhum registrador, logo se do bit 0 ao 7 tiver apenas 0      
 }
-
 // ADD Ld, pc, #immed*4 | ADD Ld, sp, #immed*4
 void DecodeADDLdpc_ADDLdsp(int number, FILE *fileX){
     int op = (number & (mask1 << 0xb)) >> 0xb;                                  
