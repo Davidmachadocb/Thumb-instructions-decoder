@@ -53,6 +53,10 @@ int main(){
                     mapFunction(number, ptr_output);//Função para achar os mnemonics das instruções em hexadecimal.
 													// Essa função se encontra na map.c
                 }
+			
+		if(Poff() == 1){
+                    fPoff(0,ptr_output,1);
+                }
 
                 fclose(ptr_input);		//com o laço finalizado, o programa pode ser encerrado e com isso os ponteiros
                 fclose(ptr_output);
