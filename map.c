@@ -147,14 +147,14 @@ void fsubGrupo4_1(int number,FILE *fileX){
 
 // Instruções com os bits superiores [15-12] sendo igual a 0100 e bit 10 sendo 1
 void fsubGrupo4_2(int number,FILE *fileX){
-  int test = (number & 0x3C0) >> 0x6;
+  int test = (number & 0x3C0) >> 0x6;                                                                                  // Bits [9-8]
 
   if(test == 0x0 || test == 0x4)
     underfined(number,fileX);
-  else if(((number & 0x3C0) >> 0x6) >= 0xC)                                                                                  // Se os bits [9-6] são maiores ou iguais a 1100    
+  else if(test >= 0xC)                                                                                  // Se os bits [9-6] são maiores ou iguais a 1100    
     DecodeBX_BLX_RM(number,fileX);                                          
   else{
-    int indice = (number & 0x1C0) >> 0x6;                                                                               // Pegando bits [9-6] como índice
+    int indice = (number & 0x1C0) >> 0x6;                                                                               // Pegando bits [8-6] como índice
     (* pDecodeSubGrupo4_2[indice])(number,fileX);  
   }
 }
