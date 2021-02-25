@@ -4,6 +4,9 @@
 #include "Decode.h"
 
 int flagPoff = 0;                                                                                                       // Diz se poff foi alterado na instrução anterior, com 0 para não e 1 para sim
+int indice = 0;
+int test = 0;
+int higher4Bits;
 
 //============================================================================================================================================================
 // PONTEIROS:
@@ -13,26 +16,26 @@ int flagPoff = 0;                                                               
 void (* pCamarda1[])(int number,FILE *fileX) =
 {                              
   DecodeLSL_LSR_LD_LM_IMM5,                                                                                             // Bits[15-12] == 0000
-  fgrupo1,                                                                                                              // Bits[15-12] == 0001                                                        
+  fgrup1,                                                                                                              // Bits[15-12] == 0001                                                        
   DecodeMOV_CMP_LD_IMM8,                                                                                                // Bits[15-12] == 0010
   DecodeADD_SUB_LD_IMM8,                                                                                                // Bits[15-12] == 0011
-  fgrupo4,                                                                                                              // Bits[15-12] == 0100
-  fgrupo5,                                                                                                              // Bits[15-12] == 0101
+  fgrup4,                                                                                                              // Bits[15-12] == 0100
+  fgrup5,                                                                                                              // Bits[15-12] == 0101
   DecodeSTR_LDR_LD_LN_IMM5,                                                                                             // Bits[15-12] == 0110
   DecodeSTRB_LDRB_LD_LN_IMM5,                                                                                           // Bits[15-12] == 0111
   DecodeSTRH_LDRH_LD_LN_IMM5,                                                                                           // Bits[15-12] == 1000
   DecodeSTR_LDR_SP_IMM8,                                                                                                // Bits[15-12] == 1001
   DecodeADDLdpc_ADDLdsp,                                                                                                // Bits[15-12] == 1010
-  fgrupo11,                                                                                                             // Bits[15-12] == 1011
+  fgrup11,                                                                                                             // Bits[15-12] == 1011
   DecodeSTMIA_LDMIA,                                                                                                    // Bits[15-12] == 1100
-  fgrupo13,                                                                                                             // Bits[15-12] == 1101
-  fgrupo14,                                                                                                             // Bits[15-12] == 1110
+  fgrup13,                                                                                                             // Bits[15-12] == 1101
+  fgrup14,                                                                                                             // Bits[15-12] == 1110
   DecodeBL_OFFSET                                                                                                       // Bits[15-12] == 1111
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Bits [11,10] das instruções com os bits [15-12] sendo igual a 0001
-void (* pDecodeGrupo0001[])(int number,FILE *fileX) =
+void (* pDecodegrup0001[])(int number,FILE *fileX) =
 {                              
   DecodeASR_LD_LM_IMM5,                                                                                                 // bits [11,10] sendo 00
   DecodeASR_LD_LM_IMM5,                                                                                                 // bits [11,10] sendo 00
@@ -43,14 +46,14 @@ void (* pDecodeGrupo0001[])(int number,FILE *fileX) =
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Bit [10] das instruções com os bits [15-12] sendo igual a 0100
-void (* pDecodeGrupo0100[])(int number,FILE *fileX) =
+void (* pDecodegrup0100[])(int number,FILE *fileX) =
 {                              
-  fsubGrupo4_1,                                                                                                         // bit [10] sendo 0
-  fsubGrupo4_2                                                                                                          // bit [10] sendo 1
+  fsubgrup4_1,                                                                                                         // bit [10] sendo 0
+  fsubgrup4_2                                                                                                          // bit [10] sendo 1
 };
 
 // Bits [9,8] das instruções com os bits [15-12] sendo igual a 0100
-void (* pDecodeSubGrupo4_1[])(int number,FILE *fileX) =
+void (* pDecodeSubgrup4_1[])(int number,FILE *fileX) =
 {                              
   DecodeAND_EOR_LSL_LSR_LD_LM,                                                                                          // bits [9,8] sendo 00
   DecodeASR_ADC_SBC_ROR_LD_LM_LS,                                                                                       // bits [9,8] sendo 00
@@ -59,7 +62,7 @@ void (* pDecodeSubGrupo4_1[])(int number,FILE *fileX) =
 };
 
 // Bits [8-6] das instruções com os bits superiores [15-12] sendo igual a 0100
-void (* pDecodeSubGrupo4_2[])(int number,FILE *fileX) =
+void (* pDecodeSubgrup4_2[])(int number,FILE *fileX) =
 { 
   DecodeCPY_LD_LM,                                                                                                      // Bits [8-6] sendo 000
   DecodeADD_MOV_LD_HM,                                                                                                  // Bits [8-6] sendo 001
@@ -73,7 +76,7 @@ void (* pDecodeSubGrupo4_2[])(int number,FILE *fileX) =
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Bit [11] das instruções com os bits superiores [15-12] sendo igual a 0101
-void (* pDecodeGrupo0101[])(int number,FILE *fileX) =
+void (* pDecodegrup0101[])(int number,FILE *fileX) =
 {                              
   DecodeSTR_STRH_STRB_LDRSB_LD_LN_LM,                                                                                   // bit [11] sendo 0
   DecodeLDR_LDRH_LDRB_LDRSH_LD_LN_LM                                                                                    // bit [11] sendo 1
@@ -81,7 +84,7 @@ void (* pDecodeGrupo0101[])(int number,FILE *fileX) =
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Bits [11-8]. Nas instruções com os bits superiores [15-12] sendo igual a 1011
-void (* pDecodeGrupo1011[])(int number,FILE *fileX) =
+void (* pDecodegrup1011[])(int number,FILE *fileX) =
 {                              
   DecodeADDsp_SUBsp,                                                                                                    // Bits[11-8] sendo 0000
   underfined,                                                                                                           // Bits[11-8] sendo 0001
@@ -89,7 +92,7 @@ void (* pDecodeGrupo1011[])(int number,FILE *fileX) =
   underfined,                                                                                                           // Bits[11-8] sendo 0011
   DecodePUSH_POP,                                                                                                       // Bits[11-8] sendo 0100
   DecodePUSH_POP,                                                                                                       // Bits[11-8] sendo 0101
-  fsubGrupo11,                                                                                                          // Bits[11-8] sendo 0110
+  fsubgrup11,                                                                                                           // Bits[11-8] sendo 0110
   underfined,                                                                                                           // Bits[11-8] sendo 0111
   underfined,                                                                                                           // Bits[11-8] sendo 1000
   underfined,                                                                                                           // Bits[11-8] sendo 1001
@@ -103,7 +106,7 @@ void (* pDecodeGrupo1011[])(int number,FILE *fileX) =
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Bit [8] das instruções com os bits superiores [15-12] sendo igual a 1101
-void (* pDecodeGrupo1101[])(int number,FILE *fileX) =
+void (* pDecodegrup1101[])(int number,FILE *fileX) =
 {                              
   DecodeUndefined,                                                                                                      // bit [8] sendo 0
   DecodeSWI_IMM8                                                                                                        // bit [8] sendo 0
@@ -111,7 +114,7 @@ void (* pDecodeGrupo1101[])(int number,FILE *fileX) =
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Bit [11] das instruções com os bits superiores [15-12] sendo igual a 1110
-void (* pDecodeGrupo1110[])(int number,FILE *fileX) =
+void (* pDecodegrup1110[])(int number,FILE *fileX) =
 {                              
   DecodeB_OFFSET,                                                                                                       // bit [11] sendo 0
   DecodeBLX_OFFSET                                                                                                      // bit [11] sendo 1
@@ -123,58 +126,58 @@ void (* pDecodeGrupo1110[])(int number,FILE *fileX) =
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Instruções com os bits superiores [15-12] sendo igual a 0001
-void fgrupo1(int number,FILE *fileX){
-  int indice = (number & 0xC00) >> 0xA;                                                                                 // Pegando bits [11,10]
-  (* pDecodeGrupo0001[indice])(number,fileX);
+void fgrup1(int number,FILE *fileX){
+  indice = (number & 0xC00) >> 0xA;                                                                                 // Pegando bits [11,10]
+  (* pDecodegrup0001[indice])(number,fileX);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Instruções com os bits superiores [15-12] sendo igual a 0100
-void fgrupo4(int number,FILE *fileX){
+void fgrup4(int number,FILE *fileX){
   if(((number & 0x800) >> 0xB) == 1)                                                                                    // Se bit [11] é 1, então só pode ser uma função
     DecodeLDR_LD_PC_IMM8X4(number,fileX);
   else{
-    int indice = (number & 0x400) >> 0xA;                                                                               // Pegando bit [10] como índice
-    (* pDecodeGrupo0100[indice])(number,fileX);
+    indice = (number & 0x400) >> 0xA;                                                                               // Pegando bit [10] como índice
+    (* pDecodegrup0100[indice])(number,fileX);
   }
 }
 
 // Instruções com os bits superiores [15-12] sendo igual a 0100 e bit 10 sendo 0
-void fsubGrupo4_1(int number,FILE *fileX){
-  int indice = (number & 0x300) >> 0x8;                                                                                 // Pegando bits [9-8] como índice
-  (* pDecodeSubGrupo4_1[indice])(number,fileX);  
+void fsubgrup4_1(int number,FILE *fileX){
+  indice = (number & 0x300) >> 0x8;                                                                                 // Pegando bits [9-8] como índice
+  (* pDecodeSubgrup4_1[indice])(number,fileX);  
 }
 
 // Instruções com os bits superiores [15-12] sendo igual a 0100 e bit 10 sendo 1
-void fsubGrupo4_2(int number,FILE *fileX){
-  int test = (number & 0x3C0) >> 0x6;
+void fsubgrup4_2(int number,FILE *fileX){
+  test = (number & 0x3C0) >> 0x6;
 
   if(test == 0x0 || test == 0x4)
     underfined(number,fileX);
-  else if(((number & 0x3C0) >> 0x6) >= 0xC)                                                                                  // Se os bits [9-6] são maiores ou iguais a 1100    
+  else if(((number & 0x3C0) >> 0x6) >= 0xC)                                                                             // Se os bits [9-6] são maiores ou iguais a 1100    
     DecodeBX_BLX_RM(number,fileX);                                          
   else{
-    int indice = (number & 0x3C0) >> 0x6;                                                                               // Pegando bits [9-6] como índice
-    (* pDecodeSubGrupo4_2[indice])(number,fileX);  
+    indice = (number & 0x3C0) >> 0x6;                                                                               // Pegando bits [9-6] como índice
+    (* pDecodeSubgrup4_2[indice])(number,fileX);  
   }
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Instruções com os bits superiores [15-12] sendo igual a 0101
-void fgrupo5(int number,FILE *fileX){
-  int indice = (number & 0x800) >> 0xB;                                                                                 // Pegando bit [11] como índice
-  (* pDecodeGrupo0101[indice])(number,fileX);
+void fgrup5(int number,FILE *fileX){
+  indice = (number & 0x800) >> 0xB;                                                                                 // Pegando bit [11] como índice
+  (* pDecodegrup0101[indice])(number,fileX);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Instruções com os bits superiores [15-12] sendo igual a 1011
-void fgrupo11(int number,FILE *fileX){
-  int indice = (number & 0xF00) >> 0x8;                                                                                 // Pegando bits [8-11] como índice
-  (* pDecodeGrupo1011[indice])(number,fileX);
+void fgrup11(int number,FILE *fileX){
+  indice = (number & 0xF00) >> 0x8;                                                                                 // Pegando bits [8-11] como índice
+  (* pDecodegrup1011[indice])(number,fileX);
 }
 
 // Instruções com os bits superiores [15-12] sendo igual a 1011, bits [8-11] sendo igual a 0110
-void fsubGrupo11(int number,FILE *fileX){
+void fsubgrup11(int number,FILE *fileX){
   if((((number & 0xF0) >> 0x4) == 0x5) && (first3Bits(number) == 0x0)){                                                 // number com bits [4-7] sendo 0101 e bits [0-2] sendo 000 
     DecodeSETENDLE_SETENDBE(number,fileX);
   }
@@ -187,23 +190,23 @@ void fsubGrupo11(int number,FILE *fileX){
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Instruções com os bits superiores [15-12] sendo igual a 1101
-void fgrupo13(int number,FILE *fileX){
+void fgrup13(int number,FILE *fileX){
   if(((number & (0xF00)) >> 0X8) < 0xE)
     DecodeBcond_OFFSET(number, fileX);                                                                                  // cond < 1110
   else{
-    int indice = (number & 0x100) >> 0x8;                                                                               // Pegando bit [8] como índice
-    (* pDecodeGrupo1101[indice])(number,fileX);
+    indice = (number & 0x100) >> 0x8;                                                                               // Pegando bit [8] como índice
+    (* pDecodegrup1101[indice])(number,fileX);
   }
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Instruções com os bits superiores [15-12] sendo igual a 1110
-void fgrupo14(int number,FILE *fileX){
-  int indice = (number & 0x800) >> 0xB;                                                                                 // Pegando bits [11] como índice
+void fgrup14(int number,FILE *fileX){
+  indice = (number & 0x800) >> 0xB;                                                                                 // Pegando bits [11] como índice
   if((indice == 1) && ((number & mask1) == 1))                                                                          // Se bit [11] for 1 e bit [0] de number for 1,então não há uma função
     underfined(number,fileX);
   else
-    (* pDecodeGrupo1110[indice])(number,fileX);
+    (* pDecodegrup1110[indice])(number,fileX);
 }
 
 int Poff(){
@@ -214,7 +217,7 @@ int Poff(){
 // FUNÇÃO MAP:
 
 void mapFunction(int number,FILE *fileX){
-  int test = (number & 0xF800) >> 0xB;                                                                                  // Teste para instrução que altera o valor de poff
+  test = (number & 0xF800) >> 0xB;                                                                                  // Teste para instrução que altera o valor de poff
 
   if(flagPoff == 0 && test == 0x1E){                                                                                    // poff no seu estado original e com a instrução que altera poff
     fPoff(number,fileX,0);                                                                                              // novo valor de poff
@@ -229,20 +232,20 @@ void mapFunction(int number,FILE *fileX){
     fPoff(0,fileX,0);                                                                                                   // poff em seu estado original
     flagPoff = 0;                                                                                                       
     
-    int higher4Bits = (number & (0xF << 0xC)) >> 0xC;                                                                   // mapear instrução atual
+    higher4Bits = (number & (0xF << 0xC)) >> 0xC;                                                                   // mapear instrução atual
     (* pCamarda1[higher4Bits])(number,fileX);
   }
   else if((flagPoff == 1 && test == 0x1D) || (flagPoff == 1 && test == 0x1F)){                                          // poff alterado na instrução anterior e instrução atual é BLX ou BL que usam valor de poff
     fPoff(number,fileX,2);                                                                                              // poff sem Error
     flagPoff = 0;                                                                                                       
     
-    int higher4Bits = (number & (0xF << 0xC)) >> 0xC;                                                                   // mapear instrução atual
+    higher4Bits = (number & (0xF << 0xC)) >> 0xC;                                                                   // mapear instrução atual
     (* pCamarda1[higher4Bits])(number,fileX);
 
     fPoff(0,fileX,0);                                                                                                   // poff estado original
   }
   else{                                                                                                                 //poff no seu estado original e instrução atual não altera poff
-    int higher4Bits = (number & (0xF << 0xC)) >> 0xC;
+    higher4Bits = (number & (0xF << 0xC)) >> 0xC;
     (* pCamarda1[higher4Bits])(number,fileX);
   }
 }
