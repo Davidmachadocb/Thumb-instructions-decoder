@@ -614,12 +614,14 @@ void DecodeSTMIA_LDMIA(int number, FILE *fileX){
 }
 // ADD Ld, pc, #immed*4 | ADD Ld, sp, #immed*4
 void DecodeADDLdpc_ADDLdsp(int number, FILE *fileX){
-    int op = (number & (mask1 << 0xb)) >> 0xb;                                  
-    int Ld = (number & (mask7 << 0x8)) >> 0x8;
+    int op = (number & (mask1 << 0xb)) >> 0xb;	//recebe o valor do operando que está no bit 11.                                  
+    int Ld = (number & (mask7 << 0x8)) >> 0x8;  //recebe o valor que representa o registrador Ld
 
+	// Se op = 0, então ADD Ld, pc, #immed*4
     if(op == 0){
         fprintf(fileX,"%x\t ADD r%d, pc, #%d \n",number,Ld,immed8(number)*4);
     }
+    //Se op = 1, então ADD Ld, sp, #immed*4
     else{
         fprintf(fileX,"%x\t ADD r%d, sp, #%d \n",number,Ld,immed8(number)*4);
     }
@@ -627,11 +629,13 @@ void DecodeADDLdpc_ADDLdsp(int number, FILE *fileX){
 
 // ADD sp, #immed*4 | SUB sp, #immed*4
 void DecodeADDsp_SUBsp(int number, FILE *fileX){
-    int op = (number & (mask1 << 0x7)) >> 0x7;                                  
+    int op = (number & (mask1 << 0x7)) >> 0x7; //recebe o valor do operando que está no bit 7.                                  
 
+	// Se op = 0, então ADD sp, #immed*4
     if(op == 0){
         fprintf(fileX,"%x\t ADD  sp, #%d \n", number,(immed7(number))*4);
     }
+    //Se op = 1, então SUB sp, #immed*4
     else{
         fprintf(fileX,"%x\t SUB sp, #%d \n", number ,(immed7(number))*4);
     }
@@ -639,11 +643,13 @@ void DecodeADDsp_SUBsp(int number, FILE *fileX){
 
 // SETEND LE | SETEND BE
 void DecodeSETENDLE_SETENDBE(int number, FILE *fileX){
-    int op = (number & (mask1 << 0x3)) >> 0x3;                                 
-
+    int op = (number & (mask1 << 0x3)) >> 0x3;  //recebe o valor do op que está no bit 3.                              
+	
+	// Se op = 0, então SETEND LE
     if(op == 0){
         fprintf(fileX,"%x\t SETEND LE \n", number);
     }
+    // Se op = 1, então SETEND BE
     else{
         fprintf(fileX,"%x\t SETEND BE \n", number);
     }
@@ -651,61 +657,109 @@ void DecodeSETENDLE_SETENDBE(int number, FILE *fileX){
 
 //SXTH | SXTB | UXTH | UXTB
 void DecodeSXTH_SXTB_UXTH_UXTB(int number, FILE *fileX){
-    int op = (number & (mask3 << 0x6)) >> 0x6;
-    int Ld = number & maskF;
-    int Lm = (number & (mask7 << 0x3)) >> 0x3;
+    int op = (number & 0xC0) >> 6; //salva o valor de op que se encontra nos bits 6 e 7.
+    int Ld = first3Bits(number);			   //recebe o valor que representa o registrador nos 3 primeiros bits em Ld.
+    int Lm = second3Bits(number);              //recebe o valor de três bits que representa o registrador e salva em Lm.
 
+	// se op = 0, então SXTH.
     if(op == 0 ){
-        fprintf(fileX,"%x\t SXTH r%d, r%d \n",number, Lm, Ld);
+        fprintf(fileX,"%x\t SXTH r%d, r%d \n",number, Ld, Lm);
     }
+    // se op = 1, então SXTB. 
     else if(op == 1){
-        fprintf(fileX,"%x\t SXTB r%d, r%d \n",number, Lm, Ld);
+        fprintf(fileX,"%x\t SXTB r%d, r%d \n",number, Ld, Lm);
     }
+    // se op = 2, então UXTH.
     else if(op == 2){
-        fprintf(fileX,"%x\t UXTH r%d, r%d \n",number, Lm, Ld);
+        fprintf(fileX,"%x\t UXTH r%d, r%d \n",number, Ld, Lm);
     }
+    // Se op = 3, então UXTB.
     else{
-        fprintf(fileX,"%x\t UXTB r%d, r%d \n",number, Lm, Ld);
+        fprintf(fileX,"%x\t UXTB r%d, r%d \n",number, Ld, Lm);
     }
 }
 
-//REV | REV16 | | REVSH
+//REV | REV16 | nada | REVSH
 void DecodeREV_REV16_REVSH(int number, FILE *fileX){
-    int op = (number & (mask3 << 0x6)) >> 0x6;
-    int Ld = number & maskF;
-    int Lm = (number & (mask7 << 0x3)) >> 0x3;
+    int op = (number & 0xC0) >> 6; //salva o valor de op que se encontra nos bits 6 e 7.
+    int Ld = first3Bits(number);			   //recebe o valor que representa o registrador nos 3 primeiros bits em Ld.
+    int Lm = second3Bits(number);              //recebe o valor de três bits que representa o registrador e salva em Lm.
 
+	// se op = 0, então REV.
     if(op == 0 ){
-        fprintf(fileX,"%x\t REV r%d, r%d \n",number, Lm, Ld);
+        fprintf(fileX,"%x\t REV r%d, r%d \n",number, Ld, Lm);
     }
+    
+    //se op = 1, então REV.
     else if(op == 1){
-        fprintf(fileX,"%x\t REV16 r%d, r%d \n",number, Lm, Ld);
-    }
+        fprintf(fileX,"%x\t REV16 r%d, r%d \n",number, Ld, Lm);
+    } 
+    //  se op = 2, então nada.
     else if(op == 2){
-        fprintf(fileX,"%x\t", number);
+        fprintf(fileX,"%x\t Undefined \n", number);
     }
+    // se op = 3, então REVSH. 
     else{
-        fprintf(fileX,"%x\t REVSH r%d, r%d \n",number, Lm, Ld);
+        fprintf(fileX,"%x\t REVSH r%d, r%d \n",number, Ld, Lm);
     }
 }
 
 //CPSIE | CPSID
 void DecodeCPSIE_CPSID(int number, FILE *fileX){
-    int op = (number & (mask1 << 0x4)) >> 0x4;
-
+    int op = (number & (mask1 << 0x4)) >> 0x4; // recebe o valor que está no bit 4 que define se é CPSIE ou CPSID.
+	int none = 0; // variavel para ver se algum bit de flag foi ativado.
 
     if(op == 0){
-        fprintf(fileX,"%x\t CPSIE ", number);
-        if((number & (mask1 << 2)) >> 2 == 1) fprintf(fileX,"a");
-        if((number & (mask1 << 1)) >> 1 == 1) fprintf(fileX,"i");
-        if((number & mask1) == 1)     fprintf(fileX,"f");
+        fprintf(fileX,"%x\t CPSIE ", number); //imprimir a mensagem parcialmente.
+        
+        //verficar se o bit a está ativado e se estiver imprimir ele e colocar 1 em none.
+        if((number & (mask1 << 2)) >> 2 == 1){ 
+			fprintf(fileX,"a");
+			none = 1;
+		}
+        
+        //verficar se o bit i está ativado e se estiver imprimir ele e colocar 1 em none.
+        if((number & (mask1 << 1)) >> 1 == 1){ 
+			fprintf(fileX,"i");
+			none = 1;
+		}
+        
+        //verficar se o bit f está ativado e se estiver imprimir ele e colocar 1 em none.
+        if((number & mask1) == 1){     
+			fprintf(fileX,"f");
+			none = 1;
+		}
+        
+        //verficar se none é zero, e se for imprimir none.
+        if(none == 0){	fprintf(fileX,"none\n");}
+        
         fprintf(fileX," \n");
     }
+    
     else{
-        fprintf(fileX,"%x\t CPSID ", number);
-        if((number & (mask1 << 2)) >> 2 == 1) fprintf(fileX,"a");
-        if((number & (mask1 << 1)) >> 1 == 1) fprintf(fileX,"i");
-        if((number & mask1) == 1)     fprintf(fileX,"f");;
+        fprintf(fileX,"%x\t CPSIE ", number);//imprimir a mensagem parcialmente.
+        
+        //verficar se o bit a está ativado e se estiver imprimir ele e colocar 1 em none.
+        if((number & (mask1 << 2)) >> 2 == 1){ 
+			fprintf(fileX,"a");
+			none = 1;
+		}
+        
+        //verficar se o bit i está ativado e se estiver imprimir ele e colocar 1 em none.
+        if((number & (mask1 << 1)) >> 1 == 1){ 
+			fprintf(fileX,"i");
+			none = 1;
+		}
+        
+        //verficar se o bit f está ativado e se estiver imprimir ele e colocar 1 em none.
+        if((number & mask1) == 1){     
+			fprintf(fileX,"f");
+			none = 1;
+		}
+        
+        //verficar se none é zero, e se for imprimir none.
+        if(none == 0){	fprintf(fileX,"none\n");}
+        
         fprintf(fileX," \n");
     }
 }
